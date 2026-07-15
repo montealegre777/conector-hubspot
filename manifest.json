@@ -1,0 +1,110 @@
+{
+  "id": "hubspot",
+  "name": "HubSpot",
+  "version": "1.0.0",
+  "description": "Gestión de contactos y negocios en HubSpot: crear/actualizar contactos, consultarlos, y crear negocios (deals)",
+  "icon": "icon.svg",
+  "category": "crm",
+  "library": {
+    "package": "ruvic-hubspot-connector",
+    "install": "pip install git+https://github.com/tu-org/conector-hubspot.git#subdirectory=lib",
+    "import_name": "ruvic_hubspot_connector"
+  },
+  "auth_modes": [
+    {
+      "id": "private_app_token",
+      "label": "Private App Access Token",
+      "fields": [
+        {
+          "key": "access_token",
+          "label": "Access Token",
+          "type": "password",
+          "secret": true,
+          "required": true,
+          "placeholder": "pat-na1-...",
+          "help_text": "Token de una Private App de HubSpot (Settings → Integrations → Private Apps). Requiere los scopes crm.objects.contacts.read/write y crm.objects.deals.read/write."
+        },
+        {
+          "key": "api_base_url",
+          "label": "URL base de la API (opcional)",
+          "type": "text",
+          "required": false,
+          "default": "https://api.hubapi.com",
+          "help_text": "Déjalo por defecto salvo que tu cuenta use residencia de datos en la UE (usar https://api-eu1.hubapi.com)"
+        },
+        {
+          "key": "request_timeout",
+          "label": "Timeout de peticiones (segundos)",
+          "type": "number",
+          "required": false,
+          "default": "20"
+        }
+      ]
+    },
+    {
+      "id": "oauth2",
+      "label": "Autorizar con HubSpot (OAuth2, usuario)",
+      "fields": [
+        {
+          "key": "client_id",
+          "label": "Client ID",
+          "type": "text",
+          "required": true,
+          "help_text": "Client ID de tu App de HubSpot (developers.hubspot.com), con la Redirect URI de la plataforma registrada."
+        },
+        {
+          "key": "client_secret",
+          "label": "Client Secret",
+          "type": "password",
+          "secret": true,
+          "required": true
+        },
+        {
+          "key": "refresh_token",
+          "label": "Autorización de la cuenta",
+          "type": "oauth2_authorization",
+          "secret": true,
+          "required": true,
+          "oauth2": {
+            "authorization_url": "https://app.hubspot.com/oauth/authorize",
+            "token_url": "https://api.hubapi.com/oauth/v1/token",
+            "scopes": [
+              "crm.objects.contacts.read",
+              "crm.objects.contacts.write",
+              "crm.objects.deals.read",
+              "crm.objects.deals.write"
+            ],
+            "capture": "refresh_token",
+            "client_credentials": "user"
+          }
+        },
+        {
+          "key": "api_base_url",
+          "label": "URL base de la API (opcional)",
+          "type": "text",
+          "required": false,
+          "default": "https://api.hubapi.com"
+        },
+        {
+          "key": "request_timeout",
+          "label": "Timeout de peticiones (segundos)",
+          "type": "number",
+          "required": false,
+          "default": "20"
+        }
+      ]
+    }
+  ],
+  "env_prefix": "RUVIC_HUBSPOT_",
+  "operations": [
+    "crm.upsert_contact",
+    "crm.get_contact",
+    "crm.search_contacts",
+    "crm.create_deal"
+  ],
+  "test_connection": true,
+  "docs": {
+    "skill": "SKILL.md",
+    "permissions_note": "La Private App necesita, como mínimo, los scopes 'crm.objects.contacts.read', 'crm.objects.contacts.write', 'crm.objects.deals.read' y 'crm.objects.deals.write'. No requiere scopes de marketing, CMS, workflows ni tickets. La eliminación de contactos y negocios no está soportada por este conector."
+  }
+}

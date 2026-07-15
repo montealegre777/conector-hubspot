@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ruvic-hubspot-connector"
+version = "1.0.0"
+description = "Conector Ruvic para HubSpot: gestión de contactos y negocios vía CRM API v3 (Private App Access Token)"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31,<3.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["ruvic_hubspot_connector*"]

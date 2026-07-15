@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conector HubSpot — Guía de configuración | Ruvic</title>
+  <link rel="stylesheet" href="assets/ruvic.css">
+</head>
+<body>
+
+<header class="ruvic-header">
+  <div class="ruvic-header-inner">
+    <p class="ruvic-wordmark">Ruvic</p>
+
+    <h1>
+      <span class="lang-es">Conector HubSpot — Guía de configuración</span>
+      <span class="lang-en">HubSpot Connector — Setup Guide</span>
+    </h1>
+    <p class="subtitle">
+      <span class="lang-es">Conecta tu cuenta de HubSpot a Ruvic Engine para que el agente cree, actualice y consulte contactos, y cree negocios en tu pipeline.</span>
+      <span class="lang-en">Connect your HubSpot account to Ruvic Engine so the agent can create, update and look up contacts, and create deals in your pipeline.</span>
+    </p>
+
+    <div class="meta">
+      <span class="ruvic-badge">HubSpot</span>
+      <span class="ruvic-badge">
+        <span class="lang-es">CRM / Negocio</span>
+        <span class="lang-en">CRM / Business</span>
+      </span>
+      <span class="ruvic-badge">v1.0.0</span>
+    </div>
+
+    <div class="lang-switch" role="group" aria-label="Idioma / Language">
+      <button type="button" data-set-lang="es" class="active">ES</button>
+      <button type="button" data-set-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main class="ruvic-container">
+
+  <!-- ============ ÍNDICE ============ -->
+  <nav class="ruvic-toc" aria-label="Índice">
+    <h2><span class="lang-es">Contenido</span><span class="lang-en">Contents</span></h2>
+    <ol>
+      <li><a href="#que-es"><span class="lang-es">¿Qué es y para qué sirve?</span><span class="lang-en">What is it and what is it for?</span></a></li>
+      <li><a href="#prerrequisitos"><span class="lang-es">Prerrequisitos</span><span class="lang-en">Prerequisites</span></a></li>
+      <li><a href="#fabricante"><span class="lang-es">Configuración en el fabricante (paso a paso)</span><span class="lang-en">Vendor-side setup (step by step)</span></a></li>
+      <li><a href="#permisos"><span class="lang-es">Permisos requeridos (scopes)</span><span class="lang-en">Required permissions (scopes)</span></a></li>
+      <li><a href="#ruvic"><span class="lang-es">Configuración en Ruvic</span><span class="lang-en">Setup in Ruvic</span></a></li>
+      <li><a href="#verificacion"><span class="lang-es">Verificación</span><span class="lang-en">Verification</span></a></li>
+      <li><a href="#problemas"><span class="lang-es">Solución de problemas</span><span class="lang-en">Troubleshooting</span></a></li>
+      <li><a href="#faq"><span class="lang-es">Preguntas frecuentes y notas de seguridad</span><span class="lang-en">FAQ and security notes</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1. QUÉ ES ============ -->
+  <section id="que-es">
+    <h2><span class="lang-es">1. ¿Qué es y para qué sirve?</span><span class="lang-en">1. What is it and what is it for?</span></h2>
+
+    <div class="lang-es">
+      <p>El conector HubSpot permite que el agente de Ruvic gestione contactos y negocios (deals) directamente en tu cuenta de HubSpot. Una vez configurado, puedes pedirle al agente cosas como:</p>
+      <ul>
+        <li>“Agrega este contacto que me llegó por correo, con su nombre y empresa.”</li>
+        <li>“Busca los contactos de la empresa Acme.”</li>
+        <li>“Crea un negocio de $50.000 para este cliente.”</li>
+      </ul>
+      <p>Operaciones soportadas:</p>
+    </div>
+    <div class="lang-en">
+      <p>The HubSpot connector lets the Ruvic agent manage contacts and deals directly in your HubSpot account. Once configured, you can ask the agent things like:</p>
+      <ul>
+        <li>“Add this contact I got by email, with their name and company.”</li>
+        <li>“Find the contacts from Acme.”</li>
+        <li>“Create a $50,000 deal for this client.”</li>
+      </ul>
+      <p>Supported operations:</p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th><span class="lang-es">Operación</span><span class="lang-en">Operation</span></th>
+          <th><span class="lang-es">Qué hace</span><span class="lang-en">What it does</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>crm.upsert_contact</code></td>
+          <td><span class="lang-es">Crea un contacto nuevo o actualiza uno existente, identificándolo por email (nunca duplica)</span><span class="lang-en">Creates a new contact or updates an existing one, identified by email (never duplicates)</span></td>
+        </tr>
+        <tr>
+          <td><code>crm.get_contact</code></td>
+          <td><span class="lang-es">Obtiene un contacto por su Id o por su email</span><span class="lang-en">Gets a contact by its Id or by email</span></td>
+        </tr>
+        <tr>
+          <td><code>crm.search_contacts</code></td>
+          <td><span class="lang-es">Busca contactos por texto libre (nombre, empresa, email, teléfono)</span><span class="lang-en">Searches contacts by free text (name, company, email, phone)</span></td>
+        </tr>
+        <tr>
+          <td><code>crm.create_deal</code></td>
+          <td><span class="lang-es">Crea un negocio nuevo, opcionalmente asociado a un contacto</span><span class="lang-en">Creates a new deal, optionally associated with a contact</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+      <span class="callout-title"><span class="lang-es">Sin eliminación</span><span class="lang-en">No deletion</span></span>
+      <span class="lang-es">Esta versión del conector <strong>no soporta borrar contactos ni negocios</strong>, a propósito. Si le pides al agente que elimine algo, te indicará que debes hacerlo directamente en HubSpot.</span>
+      <span class="lang-en">This version of the connector <strong>does not support deleting contacts or deals</strong>, by design. If you ask the agent to delete something, it will tell you to do it directly in HubSpot.</span>
+    </div>
+  </section>
+
+  <!-- ============ 2. PRERREQUISITOS ============ -->
+  <section id="prerrequisitos">
+    <h2><span class="lang-es">2. Prerrequisitos</span><span class="lang-en">2. Prerequisites</span></h2>
+
+    <div class="lang-es">
+      <ul>
+        <li>Una cuenta de <strong>HubSpot</strong> (cualquier tier que incluya Private Apps — la mayoría de planes pagos, y algunos gratuitos).</li>
+        <li>Permiso de <strong>Super Admin</strong> en HubSpot (solo durante la configuración inicial, para crear la Private App).</li>
+        <li>Para pruebas: usa una cuenta de HubSpot de prueba/sandbox si tienes una disponible, en vez de probar directo contra el portal de producción de un cliente.</li>
+      </ul>
+    </div>
+    <div class="lang-en">
+      <ul>
+        <li>A <strong>HubSpot</strong> account (any tier that includes Private Apps — most paid plans, and some free ones).</li>
+        <li><strong>Super Admin</strong> permission in HubSpot (only needed during initial setup, to create the Private App).</li>
+        <li>For testing: use a sandbox/test HubSpot account if available, instead of testing directly against a client's production portal.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ 3. CONFIGURACIÓN EN EL FABRICANTE ============ -->
+  <section id="fabricante">
+    <h2><span class="lang-es">3. Configuración en el fabricante (paso a paso)</span><span class="lang-en">3. Vendor-side setup (step by step)</span></h2>
+
+    <div class="callout callout-info">
+      <span class="callout-title"><span class="lang-es">Por qué Private App y no OAuth</span><span class="lang-en">Why Private App and not OAuth</span></span>
+      <span class="lang-es">HubSpot recomienda <strong>Private App Access Tokens</strong> para integraciones de un solo portal que tú mismo controlas (como esta), y reserva OAuth para apps que se instalan en muchas cuentas de clientes distintos (marketplace). Un Private App token es un token fijo con permisos (scopes) específicos — más simple de configurar que un flujo OAuth completo.</span>
+      <span class="lang-en">HubSpot recommends <strong>Private App Access Tokens</strong> for single-portal integrations you control yourself (like this one), and reserves OAuth for apps installed across many different customer accounts (marketplace apps). A Private App token is a fixed token with specific permissions (scopes) — simpler to set up than a full OAuth flow.</span>
+    </div>
+
+    <ol class="ruvic-steps">
+      <li>
+        <div class="lang-es">
+          <strong>Entra a la configuración de Private Apps.</strong>
+          <p>En HubSpot, ve a <strong>Configuración</strong> (ícono de engranaje) → <strong>Integraciones</strong> → <strong>Aplicaciones privadas</strong> (Private Apps).</p>
+        </div>
+        <div class="lang-en">
+          <strong>Go to Private Apps settings.</strong>
+          <p>In HubSpot, go to <strong>Settings</strong> (gear icon) → <strong>Integrations</strong> → <strong>Private Apps</strong>.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="lang-es">
+          <strong>Crea una nueva Private App.</strong>
+          <p>Clic en <strong>Crear una aplicación privada</strong>. En la pestaña "Información básica", ponle un nombre descriptivo, ej. <em>"Ruvic HubSpot Connector"</em>.</p>
+        </div>
+        <div class="lang-en">
+          <strong>Create a new Private App.</strong>
+          <p>Click <strong>Create a private app</strong>. In the "Basic Info" tab, give it a descriptive name, e.g. <em>"Ruvic HubSpot Connector"</em>.</p>
+        </div>
+        <div class="screenshot-placeholder">
+          <span class="lang-es">[ Captura: formulario "Crear una aplicación privada" — reemplazar por assets/img/hs-new-app.png ]</span>
+          <span class="lang-en">[ Screenshot: "Create a private app" form — replace with assets/img/hs-new-app.png ]</span>
+        </div>
+      </li>
+
+      <li>
+        <div class="lang-es">
+          <strong>Configura los permisos (Scopes).</strong>
+          <p>Ve a la pestaña <strong>"Scopes"</strong> y busca/marca, como mínimo:</p>
+          <ul>
+            <li><code>crm.objects.contacts.read</code></li>
+            <li><code>crm.objects.contacts.write</code></li>
+            <li><code>crm.objects.deals.read</code></li>
+            <li><code>crm.objects.deals.write</code></li>
+          </ul>
+          <p>No marques scopes de Marketing, CMS, Workflows ni Tickets — el conector no los usa (principio de mínimo privilegio).</p>
+        </div>
+        <div class="lang-en">
+          <strong>Configure permissions (Scopes).</strong>
+          <p>Go to the <strong>"Scopes"</strong> tab and search/check, at minimum:</p>
+          <ul>
+            <li><code>crm.objects.contacts.read</code></li>
+            <li><code>crm.objects.contacts.write</code></li>
+            <li><code>crm.objects.deals.read</code></li>
+            <li><code>crm.objects.deals.write</code></li>
+          </ul>
+          <p>Do not check Marketing, CMS, Workflows or Tickets scopes — the connector doesn't use them (least-privilege principle).</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="lang-es">
+          <strong>Crea la app y copia el token.</strong>
+          <p>Clic en <strong>"Crear app"</strong> (arriba a la derecha), confirma en el aviso de scopes, y copia el <strong>Access Token</strong> que aparece. <strong>HubSpot solo lo muestra completo una vez</strong> — cópialo ahora y guárdalo en un lugar seguro temporalmente.</p>
+        </div>
+        <div class="lang-en">
+          <strong>Create the app and copy the token.</strong>
+          <p>Click <strong>"Create app"</strong> (top right), confirm the scopes warning, and copy the <strong>Access Token</strong> shown. <strong>HubSpot only displays it in full once</strong> — copy it now and store it somewhere safe temporarily.</p>
+        </div>
+        <div class="screenshot-placeholder">
+          <span class="lang-es">[ Captura: pantalla con el Access Token generado — reemplazar por assets/img/hs-token.png ]</span>
+          <span class="lang-en">[ Screenshot: generated Access Token screen — replace with assets/img/hs-token.png ]</span>
+        </div>
+        <div class="callout callout-warning">
+          <span class="callout-title"><span class="lang-es">Riesgo de seguridad</span><span class="lang-en">Security risk</span></span>
+          <span class="lang-es">Cualquiera que tenga este token puede leer/escribir en tu HubSpot con los scopes otorgados. Trátalo como una contraseña: nunca lo compartas por canales inseguros ni lo publiques en repositorios.</span>
+          <span class="lang-en">Anyone with this token can read/write your HubSpot data within the granted scopes. Treat it like a password: never share it over insecure channels or commit it to a repository.</span>
+        </div>
+      </li>
+
+      <li>
+        <div class="lang-es">
+          <strong>Prueba desde línea de comandos (opcional pero recomendado).</strong>
+          <p>Antes de configurar Ruvic, confirma que el token funciona:</p>
+        </div>
+        <div class="lang-en">
+          <strong>Test from the command line (optional but recommended).</strong>
+          <p>Before configuring Ruvic, confirm the token works:</p>
+        </div>
+<pre><code>curl https://api.hubapi.com/crm/v3/objects/contacts?limit=1 \
+  -H "Authorization: Bearer TU_ACCESS_TOKEN"</code></pre>
+        <div class="lang-es"><p>Una respuesta con un objeto <code>"results"</code> (aunque sea una lista vacía) confirma que el token y los scopes están bien configurados.</p></div>
+        <div class="lang-en"><p>A response with a <code>"results"</code> object (even an empty list) confirms the token and scopes are configured correctly.</p></div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ 4. PERMISOS ============ -->
+  <section id="permisos">
+    <h2><span class="lang-es">4. Permisos requeridos (scopes)</span><span class="lang-en">4. Required permissions (scopes)</span></h2>
+
+    <div class="lang-es">
+      <p>A diferencia de Salesforce, en HubSpot los permisos no se asignan a un "usuario de ejecución" sino directamente a la Private App, en el momento de crearla (paso 3 de la sección anterior). Principio de mínimo privilegio: otorga solo estos 4 scopes.</p>
+    </div>
+    <div class="lang-en">
+      <p>Unlike Salesforce, in HubSpot permissions aren't assigned to a "run-as user" but directly to the Private App, at creation time (step 3 above). Least-privilege principle: grant only these 4 scopes.</p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th><span class="lang-es">Scope</span><span class="lang-en">Scope</span></th>
+          <th><span class="lang-es">Para qué lo usa el conector</span><span class="lang-en">Why the connector needs it</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>crm.objects.contacts.read</code></td>
+          <td><span class="lang-es">Necesario para <code>crm.get_contact</code> y <code>crm.search_contacts</code></span><span class="lang-en">Needed for <code>crm.get_contact</code> and <code>crm.search_contacts</code></span></td>
+        </tr>
+        <tr>
+          <td><code>crm.objects.contacts.write</code></td>
+          <td><span class="lang-es">Necesario para <code>crm.upsert_contact</code></span><span class="lang-en">Needed for <code>crm.upsert_contact</code></span></td>
+        </tr>
+        <tr>
+          <td><code>crm.objects.deals.read</code></td>
+          <td><span class="lang-es">Necesario para confirmar la creación y asociación de negocios</span><span class="lang-en">Needed to confirm deal creation and association</span></td>
+        </tr>
+        <tr>
+          <td><code>crm.objects.deals.write</code></td>
+          <td><span class="lang-es">Necesario para <code>crm.create_deal</code></span><span class="lang-en">Needed for <code>crm.create_deal</code></span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="lang-es"><p>No otorgues scopes de <strong>Marketing, CMS, Workflows, Tickets</strong> ni objetos personalizados: este conector no los usa y no los necesita.</p></div>
+    <div class="lang-en"><p>Do not grant <strong>Marketing, CMS, Workflows, Tickets</strong>, or custom object scopes: this connector doesn't use them and doesn't need them.</p></div>
+  </section>
+
+  <!-- ============ 5. CONFIGURACIÓN EN RUVIC ============ -->
+  <section id="ruvic">
+    <h2><span class="lang-es">5. Configuración en Ruvic</span><span class="lang-en">5. Setup in Ruvic</span></h2>
+
+    <div class="lang-es">
+      <p>Entra a <strong>Settings → Conectores</strong>, busca la tarjeta <strong>HubSpot</strong> y pulsa <strong>Configurar</strong>. Diligencia el formulario:</p>
+    </div>
+    <div class="lang-en">
+      <p>Go to <strong>Settings → Connectors</strong>, find the <strong>HubSpot</strong> card and click <strong>Configure</strong>. Fill in the form:</p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th><span class="lang-es">Campo del formulario</span><span class="lang-en">Form field</span></th>
+          <th><span class="lang-es">Valor</span><span class="lang-en">Value</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Access Token</td>
+          <td><span class="lang-es">El token copiado en el paso 4 de la sección 3. Se guarda cifrado como secreto: la interfaz no volverá a mostrarlo</span><span class="lang-en">The token copied in step 4 of section 3. Stored as an encrypted secret: the UI will never display it again</span></td>
+        </tr>
+        <tr>
+          <td><span class="lang-es">URL base de la API</span><span class="lang-en">API base URL</span></td>
+          <td><span class="lang-es">Déjalo vacío/por defecto salvo que tu cuenta use residencia de datos en la UE</span><span class="lang-en">Leave empty/default unless your account uses EU data residency</span></td>
+        </tr>
+        <tr>
+          <td><span class="lang-es">Timeout de peticiones</span><span class="lang-en">Request timeout</span></td>
+          <td><span class="lang-es">Opcional; <code>20</code> segundos por defecto</span><span class="lang-en">Optional; defaults to <code>20</code> seconds</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="lang-es"><p>Guarda y pulsa <span class="ruvic-button">Probar conexión</span>.</p></div>
+    <div class="lang-en"><p>Save and click <span class="ruvic-button">Test connection</span>.</p></div>
+  </section>
+
+  <!-- ============ 6. VERIFICACIÓN ============ -->
+  <section id="verificacion">
+    <h2><span class="lang-es">6. Verificación</span><span class="lang-en">6. Verification</span></h2>
+
+    <ol class="ruvic-steps">
+      <li>
+        <div class="lang-es"><strong>Test de conexión exitoso.</strong><p>El botón <em>Probar conexión</em> debe responder: <em>"Conexión exitosa a HubSpot (https://api.hubapi.com)"</em>.</p></div>
+        <div class="lang-en"><strong>Successful connection test.</strong><p>The <em>Test connection</em> button should return: <em>"Successful connection to HubSpot (https://api.hubapi.com)"</em>.</p></div>
+      </li>
+      <li>
+        <div class="lang-es"><strong>Prueba mínima con el agente.</strong><p>Abre una conversación nueva y pide:</p><blockquote><em>"Crea un contacto de prueba en HubSpot con mi correo."</em></blockquote><p>Luego confírmalo en HubSpot (Contactos) — debe aparecer.</p></div>
+        <div class="lang-en"><strong>Minimal test with the agent.</strong><p>Open a new conversation and ask:</p><blockquote><em>"Create a test contact in HubSpot with my email."</em></blockquote><p>Then confirm it in HubSpot (Contacts) — it should appear.</p></div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ 7. SOLUCIÓN DE PROBLEMAS ============ -->
+  <section id="problemas">
+    <h2><span class="lang-es">7. Solución de problemas</span><span class="lang-en">7. Troubleshooting</span></h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th><span class="lang-es">Mensaje / síntoma</span><span class="lang-en">Message / symptom</span></th>
+          <th><span class="lang-es">Causa probable y solución</span><span class="lang-en">Likely cause and fix</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="lang-es">"Autenticación fallida... HTTP 401"</span><span class="lang-en">"Authentication failed... HTTP 401"</span></td>
+          <td><span class="lang-es">El token está mal copiado, expiró o fue revocado. Genera uno nuevo en la Private App (Settings → Private Apps → tu app → "Regenerar token") y actualízalo en Ruvic.</span><span class="lang-en">The token was mistyped, expired, or was revoked. Generate a new one in the Private App (Settings → Private Apps → your app → "Rotate token") and update it in Ruvic.</span></td>
+        </tr>
+        <tr>
+          <td><span class="lang-es">"Permisos insuficientes... HTTP 403"</span><span class="lang-en">"Insufficient permissions... HTTP 403"</span></td>
+          <td><span class="lang-es">Falta un scope. Repite el paso 3 de la sección 3, marca los 4 scopes requeridos, y genera un token nuevo (los scopes no se pueden ampliar en un token ya emitido en todos los casos; si no se refleja, regenera el token).</span><span class="lang-en">A scope is missing. Redo step 3 of section 3, check the 4 required scopes, and generate a new token (scopes may not update on an already-issued token in all cases; regenerate if it doesn't reflect).</span></td>
+        </tr>
+        <tr>
+          <td><span class="lang-es">"Se alcanzó el límite de peticiones... HTTP 429"</span><span class="lang-en">"Rate limit reached... HTTP 429"</span></td>
+          <td><span class="lang-es">Se superó el límite de 100 peticiones/10 segundos del portal (o 4/segundo en búsquedas). Espera unos segundos y reintenta; si pasa seguido, revisa si hay otra integración usando el mismo portal simultáneamente.</span><span class="lang-en">Exceeded the portal's 100 requests/10 seconds limit (or 4/second for searches). Wait a few seconds and retry; if it happens often, check whether another integration is using the same portal concurrently.</span></td>
+        </tr>
+        <tr>
+          <td><span class="lang-es">"No encontrado"/"OBJECT_NOT_FOUND" en get_contact</span><span class="lang-en">"Not found"/"OBJECT_NOT_FOUND" on get_contact</span></td>
+          <td><span class="lang-es">El Id o email no existe en HubSpot, o se buscó por Id cuando el valor era un email (usa <code>by_email=True</code>).</span><span class="lang-en">The Id or email doesn't exist in HubSpot, or you searched by Id when the value was an email (use <code>by_email=True</code>).</span></td>
+        </tr>
+        <tr>
+          <td><span class="lang-es">"Solicitud inválida"/"VALIDATION_ERROR" en create_deal</span><span class="lang-en">"Invalid request"/"VALIDATION_ERROR" on create_deal</span></td>
+          <td><span class="lang-es">Un valor de <code>dealstage</code> o <code>pipeline</code> no existe en esa cuenta de HubSpot (son distintos por cuenta). Confirma los valores válidos en HubSpot (Configuración → Objetos → Negocios → Pipelines) antes de enviarlos.</span><span class="lang-en">A <code>dealstage</code> or <code>pipeline</code> value doesn't exist in that HubSpot account (they differ per account). Check the valid values in HubSpot (Settings → Objects → Deals → Pipelines) before sending them.</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ 8. FAQ Y SEGURIDAD ============ -->
+  <section id="faq">
+    <h2><span class="lang-es">8. Preguntas frecuentes y notas de seguridad</span><span class="lang-en">8. FAQ and security notes</span></h2>
+
+    <h3><span class="lang-es">¿El agente puede eliminar contactos o negocios?</span><span class="lang-en">Can the agent delete contacts or deals?</span></h3>
+    <div class="lang-es"><p>No. Esta versión del conector no incluye eliminación, a propósito.</p></div>
+    <div class="lang-en"><p>No. This version of the connector doesn't include deletion, by design.</p></div>
+
+    <h3><span class="lang-es">¿Dónde queda guardado el Access Token?</span><span class="lang-en">Where is the Access Token stored?</span></h3>
+    <div class="lang-es"><p>Como secreto en el almacén de credenciales de la plataforma. La interfaz nunca vuelve a mostrarlo; solo indica "definido". Para cambiarlo, escribe uno nuevo en el formulario.</p></div>
+    <div class="lang-en"><p>As a secret in the platform's credential store. The UI never displays it again; it only shows "set". To change it, type a new one in the form.</p></div>
+
+    <h3><span class="lang-es">Rotación de credenciales</span><span class="lang-en">Credential rotation</span></h3>
+    <div class="lang-es"><p>Recomendado cada 90 días: en HubSpot, abre la Private App → botón <em>"Regenerar token"</em> → confirma → copia el nuevo token → actualízalo en el formulario del conector → pulsa <em>Probar conexión</em>.</p></div>
+    <div class="lang-en"><p>Recommended every 90 days: in HubSpot, open the Private App → <em>"Rotate token"</em> button → confirm → copy the new token → update it in the connector form → click <em>Test connection</em>.</p></div>
+
+    <h3><span class="lang-es">¿Qué hago si el Access Token se compromete?</span><span class="lang-en">What if the Access Token is compromised?</span></h3>
+    <div class="lang-es"><ol><li>Regenera el token de inmediato en HubSpot (paso anterior), lo que invalida el anterior al instante.</li><li>Revisa la actividad reciente de la Private App en HubSpot (registro de auditoría, si tu plan lo incluye).</li><li>Actualiza el nuevo token en el formulario del conector.</li></ol></div>
+    <div class="lang-en"><ol><li>Regenerate the token immediately in HubSpot (previous step), which invalidates the old one instantly.</li><li>Review the Private App's recent activity in HubSpot (audit log, if your plan includes it).</li><li>Update the new token in the connector form.</li></ol></div>
+
+    <div class="callout callout-warning">
+      <span class="callout-title"><span class="lang-es">Buenas prácticas</span><span class="lang-en">Best practices</span></span>
+      <span class="lang-es">Otorga solo los 4 scopes necesarios (nunca "select all"); nombra la Private App de forma descriptiva para identificarla fácilmente entre otras integraciones; y evita compartir el Access Token por canales no seguros.</span>
+      <span class="lang-en">Grant only the 4 required scopes (never "select all"); name the Private App descriptively so it's easy to identify among other integrations; and never share the Access Token over insecure channels.</span>
+    </div>
+  </section>
+
+</main>
+
+<footer class="ruvic-footer">
+  <div class="tagline">Opera, factura, escala — aunque tu equipo no esté</div>
+  <div>Ruvic Engine · @ruvic_ai</div>
+</footer>
+
+<script>
+  // Toggle de idioma ES/EN — parte de la plantilla, no modificar.
+  (function () {
+    var buttons = document.querySelectorAll("[data-set-lang]");
+    function setLang(lang) {
+      document.documentElement.setAttribute("data-lang", lang);
+      document.documentElement.setAttribute("lang", lang);
+      buttons.forEach(function (btn) {
+        btn.classList.toggle("active", btn.getAttribute("data-set-lang") === lang);
+      });
+      try { localStorage.setItem("ruvic-docs-lang", lang); } catch (e) {}
+    }
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        setLang(btn.getAttribute("data-set-lang"));
+      });
+    });
+    try {
+      var saved = localStorage.getItem("ruvic-docs-lang");
+      if (saved === "en" || saved === "es") setLang(saved);
+    } catch (e) {}
+  })();
+</script>
+
+</body>
+</html>
