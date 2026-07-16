@@ -3,6 +3,10 @@
   "name": "HubSpot",
   "version": "1.0.0",
   "description": "Gestión de contactos y negocios en HubSpot: crear/actualizar contactos, consultarlos, y crear negocios (deals)",
+  "name_en": "HubSpot",
+  "description_en": "Manage HubSpot contacts and deals: create/update contacts, look them up, and create deals",
+  "category_en": "crm",
+  "keywords": ["hubspot", "crm", "contactos", "contacts", "negocios", "deals", "private app", "access token", "ventas", "sales"],
   "icon": "icon.svg",
   "category": "crm",
   "library": {
