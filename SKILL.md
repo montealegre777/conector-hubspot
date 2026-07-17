@@ -24,6 +24,8 @@ El código generado **NUNCA hardcodea credenciales**. Siempre se leen de variabl
 | `RUVIC_HUBSPOT_API_BASE_URL` | (opcional) URL base, default `https://api.hubapi.com` |
 | `RUVIC_HUBSPOT_REQUEST_TIMEOUT` | (opcional) timeout en segundos, default `20` |
 
+El código generado **NUNCA** usa nombres de variable con segmento de alias (`_DEFAULT_`, `_TEST_`, `_PRODUCCION_`, etc.) — siempre `RUVIC_HUBSPOT_{CAMPO}` tal cual, sin importar cuántas instancias de este conector haya configuradas. Esto aplica salvo que dichos nombres aparezcan explícitamente en una sección autogenerada al final de este skill.
+
 Si estas variables NO existen, el conector no está configurado: no generes código que lo use; indica al usuario que lo configure en **Settings → Conectores**.
 
 ## Conexión (siempre igual)
